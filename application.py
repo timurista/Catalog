@@ -13,6 +13,8 @@ session = DBSession()
 # TODO: extra credit, include cart item to track user additions
 
 # TODO: oauth authentication
+client_id = '384954905800-qujb3cptvcn0ip1orms72corf028ivs9.apps.googleusercontent.com'
+client_secret = 'fH_m8BHQTsKjSpjao4UIRz3S'
 
 @app.route('/')
 @app.route('/latest') 

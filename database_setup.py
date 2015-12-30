@@ -10,6 +10,17 @@ from sqlalchemy import create_engine
 # classes are special classes
 Base = declarative_base()
 
+# create user class
+class User(Base):
+	__tablename__ = "user"
+	name = Column(String(80) nullable = False)
+	email = Column(String(120) nullable = False)
+	picture = Column(String(250))
+	id = Column(
+		Integer, primary_key = True)
+
+
+
 # create class code
 class Category(Base):
 	__tablename__ = "category"
@@ -18,6 +29,9 @@ class Category(Base):
 	
 	id = Column(
 		Integer, primary_key = True)
+
+	user = relationship(User)
+	user_id = Column(Integer, ForeignKey('user.id'))
 
 # create rest class
 class CatalogItem(Base):
@@ -33,6 +47,9 @@ class CatalogItem(Base):
 	img = Column(String(250))
 	# timestamp is set to autopopulate when item is created, and autoupdate
 	timestamp = Column(DateTime, default=func.now(), onupdate=func.current_timestamp())
+
+	user = relationship(User)
+	user_id = Column(Integer, ForeignKey('user.id'))
 
 
 
