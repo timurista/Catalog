@@ -1,0 +1,53 @@
+
+<!-- saved from url=(0087)https://storage.googleapis.com/supplemental_media/udacityu/3598388784/editmenuitem.html -->
+<html class=" FB_FW_ext GCPlugin2"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"></head><body>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<div class="container">
+<h1>Edit Menu Item</h1>
+
+<div class="EditCatalogItem">
+<form action="{{ url_for('editCatalogItem', cat_name=cat_name, catalogItem = catalogItem) }}" method='POST'>
+	<h2>{{i.name}}</h2>
+	<div class="form-group">
+		<label for="name">Name:</label><input type="text" size='30' name='name' value='{{i.name}}'class="form-control">
+	</div>
+
+	<h4>{{i.title}}</h4>
+	<div class="form-group">
+		<label for="title">Title:</label><input type="text" size='30' name='title' value='{{i.title}}'class="form-control">
+	</div>
+
+	<h3>Product Description:</h3>
+	<textarea name='description' class="form-control" rows="5">{{i.description}}</textarea>
+
+	<div class="row">
+		<label for="img">Image Url:</label>
+		<input type="text" name="img"  class="form-control" value={{i.img}}>
+		<img class="img-thumbnail img-responsive center-block" width="300px" src="{{i.img}}" alt="{{i.name}}">
+	</div>
+
+	<label for="price">Price:</label>
+	<input type="currency" name="price" class="form-control" value={{i.price}}>
+
+	<label for="category">Category:</label>
+	<select class="form-control" id="sel1" name="category_id" value="{{i.category_id}}">
+		{% for cat in categories %}
+
+		<option value="{{cat.id}}"
+			{% if i.category_id == cat.id %} selected="selected" {% endif %} >
+		{{cat.name}}</option>
+
+		{% endfor %}
+	</select>
+
+<input type="submit" value='Edit'>
+
+<a href="{{url_for('categoryMenu', cat_name=cat_name ) }}">Cancel</a>
+
+</form>
+<!-- INSERT YOUR CODE HERE -->
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,30 @@
+<html>
+<body>
+<h1> New Menu Item </h1>
+
+<form action="{{url_for('newCatalogItem', cat_name = cat_name )}}" method = 'POST'>
+
+<p>Name: *</p>
+
+<input type='text' size='30' name='name'>
+
+<p>Title (Longer Version) *:</p>
+<input type='text' size='30' name='title'>
+
+<p>Description (250 chars) *:</p>
+<input type='text' size='30' name='description'>
+
+<p>Price:</p>
+<input type='number' size='30' name='price' value=19.99>
+
+
+<p>Image URL:</p>
+<input type='text' size='30' name='img'>
+
+<input type='submit' value='Create'>
+
+<a href="{{url_for('categoryMenu', cat_name = cat_name ) }}">Cancel</a>
+</form>
+
+</body>
+</html>
