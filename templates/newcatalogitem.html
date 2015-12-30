@@ -1,6 +1,6 @@
 <html>
 <body>
-<h1> New Menu Item </h1>
+<h1> New Menu Item in "{{cat_name}}"</h1>
 
 <form action="{{url_for('newCatalogItem', cat_name = cat_name )}}" method = 'POST'>
 
@@ -12,10 +12,11 @@
 <input type='text' size='30' name='title'>
 
 <p>Description (250 chars) *:</p>
-<input type='text' size='30' name='description'>
+<textarea name='description' placeholder="Your product's key information">	
+</textarea>
 
 <p>Price:</p>
-<input type='number' size='30' name='price' value=19.99>
+<input type='currency' size='30' name='price' value=$19.99>
 
 
 <p>Image URL:</p>

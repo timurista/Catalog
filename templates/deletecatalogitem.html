@@ -4,7 +4,7 @@
 <h1> Are you sure you want to delete {{item.name}}? </h1>
 
 <form action="{{ url_for('deleteCatalogItem', cat_name = cat_name, 
-catalogItem = catalogItem)}}" method = 'post'>
+catalogItem = catalogItem, item_id = item.id)}}" method = 'post'>
 
 <input type='submit', value = 'Delete'>
 

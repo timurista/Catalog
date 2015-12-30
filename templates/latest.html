@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+<!-- custom title -->
+<!-- {% block section_title %}
+<h1>Latest Items</h1>
+{% endblock %} -->
+
+{% block content %}
+
+	<div class="col-sm-9">
+		<div class="row">
+			{% for i in items %}
+
+			<p>
+			<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
+			<strong>{{i.name}}</strong>, <em> {{i.price}} </em>
+			{{i.description[:20]+"..."}} ({{i.category.name}}) - <em>{{i.timestamp.strftime("%a, %b %d %Y") }} </em>
+			</p>
+			
+			{% endfor %}
+
+		</div>
+
+	</div>
+
+{% endblock %}

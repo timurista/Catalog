@@ -7,13 +7,12 @@
 <h1>Edit Menu Item</h1>
 
 <div class="EditCatalogItem">
-<form action="{{ url_for('editCatalogItem', cat_name=cat_name, catalogItem = catalogItem) }}" method='POST'>
+<form action="{{ url_for('editCatalogItem', cat_name=cat_name, catalogItem = catalogItem, item_id = i.id) }}" method='POST'>
 	<h2>{{i.name}}</h2>
 	<div class="form-group">
-		<label for="name">Name:</label><input type="text" size='30' name='name' value='{{i.name}}'class="form-control">
+		<label for="name">Display Name:</label><input type="text" size='30' name='name' value='{{i.name}}'class="form-control">
 	</div>
 
-	<h4>{{i.title}}</h4>
 	<div class="form-group">
 		<label for="title">Title:</label><input type="text" size='30' name='title' value='{{i.title}}'class="form-control">
 	</div>

@@ -1,5 +1,5 @@
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, func
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -23,7 +23,7 @@ class Category(Base):
 class CatalogItem(Base):
 	__tablename__ = "catalog_item"
 	name = Column(String(80), nullable=False)
-	title = Column(String(200), nullable=False)
+	title = Column(String(200))
 	id = Column(Integer, primary_key=True)
 	description = Column(String(250))
 	price = Column(String(8))
@@ -31,6 +31,10 @@ class CatalogItem(Base):
 		Integer, ForeignKey('category.id'))
 	category = relationship(Category)
 	img = Column(String(250))
+	# timestamp is set to autopopulate when item is created, and autoupdate
+	timestamp = Column(DateTime, default=func.now(), onupdate=func.current_timestamp())
+
+
 
 	@property
 	def serialize(self):
@@ -42,6 +46,8 @@ class CatalogItem(Base):
 			'id' : self.id,
 			'price' : self.price,
 			'img' : self.img,
+			'category_id' : self.category_id,
+			'timestamp' : self.timestamp,
 		}
 
 #### insert at end of file ###

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+	<title>CatalogApp</title>
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='cssmenu/styles.css') }}">
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="header">
+				<div class="logo">
+					Catalog App
+				</div>
+				{% block section_title %}
+				<h1>{{cat_name}}</h1>
+				{% endblock %}
+			</div>
+		</div>
+		<hr>
+		<div class="row" id="content">
+			
+			{% block sidebar %}
+			<div class="col-sm-3 sidebar" id="sidebar">
+				<div class="latestLink"><a href="{{url_for('latestCatalog')}}">See the Latest Items!</a></div>
+				<ul>
+					{% for cat in categories %}
+					<li class="category">
+						<h4>
+							<a href="{{url_for('categoryMenu', cat_name = cat.name) }}" >{{cat.name}}</a>
+						</h4>
+					</li>
+					{% endfor %}
+				</ul>
+			</div>
+			{% endblock %}
+
+			<!-- content goes here -->
+			{% block content %}{% endblock %}			
+		</div>
+	</div>
+	<div id="footer"></div>
+</body>
+</html>

@@ -1,35 +1,33 @@
-# TODO
-
-# route to category list
-
-# main catalog
-
-# route to new item
-# route to edit item
-# route to delete item
-
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, CatalogItem
 app = Flask(__name__)
 
-# error
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+# TODO: extra credit, include cart item to track user additions
+
+# TODO: oauth authentication
 
 @app.route('/')
+@app.route('/latest') 
+def latestCatalog():
+    categories = session.query(Category).all()
+    items = session.query(CatalogItem).order_by(CatalogItem.timestamp.desc()).all()
+    return render_template('latest.html', items = items, category="Latest", categories=categories, cat_name="Latest")
+
 @app.route('/category/<cat_name>')
 @app.route('/category/<cat_name>/')
 def categoryMenu(cat_name="Soccer"):
     category = session.query(Category).filter_by(name = cat_name).one()
     categories = session.query(Category).all()
     items = session.query(CatalogItem).filter_by(category_id=category.id)
-    return render_template('catalog.html', category=category, items = items, categories=categories)
+    return render_template('catalog.html', category=category, items = items, categories=categories, cat_name=cat_name)
 
 @app.route('/category/<cat_name>/new/', methods=['GET', 'POST'])
 def newCatalogItem(cat_name):
@@ -47,20 +45,19 @@ def newCatalogItem(cat_name):
         return redirect(url_for('categoryMenu', cat_name = cat_name))
     else:
         return render_template('newcatalogitem.html', cat_name = cat_name)
-    # return "page to create a new catalog item. Task 1 complete!"
 
 # TODO: Make route for displayOnly
-@app.route('/category/<cat_name>/<catalogItem>/')
-def showCatalogItem(cat_name, catalogItem):
-    publicItem = session.query(CatalogItem).filter_by(name = catalogItem).one()
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>')
+def showCatalogItem(cat_name, catalogItem, item_id):
+    publicItem = session.query(CatalogItem).filter_by(id = item_id).one()
     categories = session.query(Category).all()
     return render_template('publiccatalogitem.html', 
         cat_name = cat_name, catalogItem = catalogItem, 
         i = publicItem)
 
-@app.route('/category/<cat_name>/<catalogItem>/edit/', methods = ['GET', 'POST'])
-def editCatalogItem(cat_name, catalogItem):
-    editedItem = session.query(CatalogItem).filter_by(name = catalogItem).one()
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/edit/', methods = ['GET', 'POST'])
+def editCatalogItem(cat_name, catalogItem, item_id):
+    editedItem = session.query(CatalogItem).filter_by(id = item_id).one()
     categories = session.query(Category).all()
     
     print request.method
@@ -88,12 +85,12 @@ def editCatalogItem(cat_name, catalogItem):
         return render_template('editcatalogitem.html', cat_name = cat_name, catalogItem = catalogItem, 
             i = editedItem, categories = categories)
 
-# Task 3: Create a route for deleteCatalogItem function here
+# A route for deleteCatalogItem function here
+# TODO: handle CSRF using oauth tokens
 
-@app.route('/category/<cat_name>/<catalogItem>/delete/', methods = ['GET', 'POST'])
-def deleteCatalogItem(cat_name, catalogItem):
-    print catalogItem
-    item = session.query(CatalogItem).filter_by(name = catalogItem).one()
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/delete/', methods = ['GET', 'POST'])
+def deleteCatalogItem(cat_name, catalogItem, item_id):
+    item = session.query(CatalogItem).filter_by(id = item_id).one()
     if request.method == 'POST':
         session.delete(item)
         session.commit()
@@ -110,10 +107,14 @@ def categoryMenuJSON(cat_name):
     return jsonify(CatalogItems = [i.serialize for i in items] )
 
 # Get one Menu Item JSON
-@app.route('/category/<cat_name>/<catalogItem>/JSON')
-def categoryCatalogItemJSON(cat_name, catalogItem):
-    item = session.query(CatalogItem).filter_by(name = catalogItem).one()
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/JSON')
+def categoryCatalogItemJSON(cat_name, catalogItem, item_id):
+    item = session.query(CatalogItem).filter_by(id = item_id).one()
     return jsonify(CatalogItems = item.serialize )
+
+
+# TODO: Additional API Endpoints RSS, Atom, XML
+
 
 
 if __name__ == '__main__':
