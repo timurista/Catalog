@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+	<title>CatalogApp</title>
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='cssmenu/styles.css') }}">
+</head>
+
+<body>
+	<div class="container">
+		<div class="row top-menu header-bg">
+
+			<div class="col-md-4 col-lg-4">
+				<a href="{{url_for('showCatalog')}}">
+					<span class="glyphicon glyphicon-home" aria-hidden="true"></span> Show Latest items
+				</a>
+			</div>
+			<div class="col-md-4 col-lg-4 text-center logo">
+				Catalog App
+			</div>
+			<div class="col-md-4 col-lg-4 text-right">
+				{% if not 'username' in login_session %}
+				<p><a href="/login">Sign in here!
+					<img src="/static/images/empty_profile_pic.png" alt="empty profile pic" style="width: 42px; height=42px; border-radius: 50%;"></a>
+				{% else %}
+				<p>
+					<a href="/gdisconnect">{{login_session['username']}}, Sign out here!
+						<img src="{{login_session['picture']}}" alt="my profile pic" style="width: 42px; height=42px; border-radius: 50%;"></a>
+				</p>
+
+				{% endif %}
+				</p>
+			</div>
+		</div>

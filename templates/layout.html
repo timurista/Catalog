@@ -1,20 +1,12 @@
-<!doctype html>
-<html>
-<head>
-	<title>CatalogApp</title>
-	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static', filename='cssmenu/styles.css') }}">
-</head>
 
-<body>
-	<div class="container">
+
+		{% include "header.html" %}
 		<div class="row">
-			<div class="header">
-				<div class="logo">
-					Catalog App
-				</div>
+			<div class="header">				
+				{% include "messages.html" %}
+
 				{% block section_title %}
+				
 				<h1>{{cat_name}}</h1>
 				{% endblock %}
 			</div>
@@ -24,7 +16,6 @@
 			
 			{% block sidebar %}
 			<div class="col-sm-3 sidebar" id="sidebar">
-				<div class="latestLink"><a href="{{url_for('latestCatalog')}}">See the Latest Items!</a></div>
 				<ul>
 					{% for cat in categories %}
 					<li class="category">

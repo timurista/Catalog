@@ -1,14 +1,33 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Category, CatalogItem
+from database_setup import Base, Category, CatalogItem, User
+
+from flask import session as login_session
+import random
+import string
+
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import FlowExchangeError
+import httplib2
+import json
+from flask import make_response
+import requests
+
 app = Flask(__name__)
 
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
+APPLICATION_NAME = "Restaurant Menu Application"
+
+
+# Connect to Database and create database session
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
 
 # TODO: extra credit, include cart item to track user additions
 
@@ -17,21 +36,19 @@ session = DBSession()
 
 '''
 TODO:
-1. create login page
-4. setup db with other users and new items in db
-2. integrate login information so user can only access if signed in
-3. make sure other users cannot enter information
-
-4. RSS feed
-5. add cart option
-6. vagrant up
-7. instructions for init.py file to populate db
-8. update readme file
-9. restyle app
+1. make sure other users cannot enter information
+2. make edit,new, delete for category
+2. RSS feed
+3. add cart option
+4. sign in with facebook
+4. vagrant up
+5. instructions for init.py file to populate db
+6. update readme file
+7. restyle app
 -- cleanup
-10. remove legacy code
-11. update function names
-12. submit project
+8. remove legacy code
+9. update function names
+10. submit project
 '''
 
 
@@ -55,6 +72,7 @@ def showLogin():
 
 
 @app.route('/fbconnect', methods=['POST'])
+# TODO: implement facebook signin.. current not set up
 def fbconnect():
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -245,6 +263,21 @@ def getUserID(email):
     except:
         return None
 
+def checkLogin():
+    if 'username' not in login_session:
+        return True
+    else:
+        return False
+
+def checkLoginAndRedirect(url="/login"):
+    # TODO: check user name is correct username
+    if not checkLogin() or login_session['username']:
+        return redirect(url)
+
+def checkUserIsCorrectUser(editedItem):
+  if editedItem.user_id != login_session['user_id']:
+    return "<script>function myAlert() {alert('You are not authorized to delete this restaurant or edit this item. Please create your own restaurant in order to delte or add.');}</script><body onload=myAlert()''>"
+
 # DISCONNECT - Revoke a current user's token and reset their login_session
 
 
@@ -261,31 +294,36 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
+
+    if result['status'] == '200':
+        #reset user's session
+        del login_session['credentials']
+        del login_session['gplus_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        # response = make_response(json.dumps('disconnected.'), 200)
+        # response.headers['Content-Type'] = 'application/json'
+        flash('User successfully logged out!')
+        return redirect('/latest')
+ 
     if result['status'] != '200':
         # For whatever reason, the given token was invalid.
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
-
-
-
-
-
-
-
-
+    # else:
+    #     # login_session = []
+    #     redirect('/catalog')
+    #     return "<p>logging out..</p>" + result['status']
 
 
 ## END OAUTH
 
-client_id = '384954905800-qujb3cptvcn0ip1orms72corf028ivs9.apps.googleusercontent.com'
-client_secret = 'fH_m8BHQTsKjSpjao4UIRz3S'
-
-
 # Making an API Endpoint (GET Request)
 @app.route('/category/<cat_name>/catalog/JSON')
-def categoryMenuJSON(cat_name):
+def categoryMenuJSON(cat_name):    
     category = session.query(Category).filter_by(name = cat_name).one()
     items = session.query(CatalogItem).all()
     return jsonify(CatalogItems = [i.serialize for i in items] )
@@ -302,10 +340,28 @@ def categoryCatalogItemJSON(cat_name, catalogItem, item_id):
 
 @app.route('/')
 @app.route('/latest') 
-def latestCatalog():
+@app.route('/catalog') 
+def showCatalog():    
     categories = session.query(Category).all()
     items = session.query(CatalogItem).order_by(CatalogItem.timestamp.desc()).all()
-    return render_template('latest.html', items = items, category="Latest", categories=categories, cat_name="Latest")
+    return render_template('latest.html', items = items, category="Latest", categories=categories, cat_name="Latest", login_session=login_session)
+
+# For managing categories
+@app.route('/category/new/')
+def newCategory():
+    checkLoginAndRedirect()
+    return render_template('newcategory.html')
+
+@app.route('/category/<cat_name>/edit/')
+def editCategory(cat_name):
+    checkLoginAndRedirect()
+    return render_template('editcategory.html')
+
+@app.route('/category/<cat_name>/delete/')
+def deleteCategory(cat_name):
+    checkLoginAndRedirect()
+    return render_template('deletecategory.html')
+
 
 @app.route('/category/<cat_name>')
 @app.route('/category/<cat_name>/')
@@ -313,10 +369,14 @@ def categoryMenu(cat_name="Soccer"):
     category = session.query(Category).filter_by(name = cat_name).one()
     categories = session.query(Category).all()
     items = session.query(CatalogItem).filter_by(category_id=category.id)
-    return render_template('catalog.html', category=category, items = items, categories=categories, cat_name=cat_name)
+    if checkLogin():
+        return render_template('publiccatalog.html', category=category, items = items, categories=categories, cat_name=cat_name, login_session=login_session)
+    else:
+        return render_template('catalog.html', category=category, items = items, categories=categories, cat_name=cat_name, login_session=login_session)
 
 @app.route('/category/<cat_name>/new/', methods=['GET', 'POST'])
 def newCatalogItem(cat_name):
+    checkLoginAndRedirect()
     if request.method == 'POST':
     	category = session.query(Category).filter_by(name = cat_name).one()
         newItem = CatalogItem(name = request.form['name'], 
@@ -324,7 +384,9 @@ def newCatalogItem(cat_name):
             description = request.form['description'],
             price = request.form['price'],
             img = request.form['img'],
-            category_id = category.id)
+            category_id = category.id,
+            # store reference to user when created
+            user = getUserInfo())
         session.add(newItem)
         session.commit()
         flash("new catalog item created!")
@@ -343,6 +405,7 @@ def showCatalogItem(cat_name, catalogItem, item_id):
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/edit/', methods = ['GET', 'POST'])
 def editCatalogItem(cat_name, catalogItem, item_id):
+    checkLoginAndRedirect()
     editedItem = session.query(CatalogItem).filter_by(id = item_id).one()
     categories = session.query(Category).all()
     
@@ -376,7 +439,10 @@ def editCatalogItem(cat_name, catalogItem, item_id):
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/delete/', methods = ['GET', 'POST'])
 def deleteCatalogItem(cat_name, catalogItem, item_id):
+    checkLoginAndRedirect()
     item = session.query(CatalogItem).filter_by(id = item_id).one()
+    checkUserIsCorrectUser(item)
+
     if request.method == 'POST':
         session.delete(item)
         session.commit()

@@ -13,8 +13,8 @@ Base = declarative_base()
 # create user class
 class User(Base):
 	__tablename__ = "user"
-	name = Column(String(80) nullable = False)
-	email = Column(String(120) nullable = False)
+	name = Column(String(80), nullable = False)
+	email = Column(String(120), nullable = False)
 	picture = Column(String(250))
 	id = Column(
 		Integer, primary_key = True)

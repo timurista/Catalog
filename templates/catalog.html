@@ -1,35 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
-	
-	<!-- <div class="col-sm-3 sidebar" id="">
-		<ul>
-			{% for cat in categories %}
-			<li class="category">
-				<h4>
-					<a href="{{url_for('categoryMenu', cat_name = cat.name) }}" >{{cat.name}}</a>
-				</h4>
-			</li>
-			{% endfor %}
-		</ul>
-	</div> -->
 
 	<div class="col-sm-9">
-		<div class="row">
-			<div class="flash">	
-				{% with messages = get_flashed_messages() %}
-				{% if messages %}
-				<ul>
-					{% for message in messages %}
-					<li> <strong>
-						{{ message }}
-					</strong> </li>
-					{% endfor %}
-				</ul>
-				{% endif %}
-				{% endwith %}
-			</div>
-		</div>
-
 		<div class="row">
 			<p> <a href="{{url_for('newCatalogItem', cat_name = category.name) }}">New Item</a> </p>
 		</div>

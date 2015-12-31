@@ -1,0 +1,30 @@
+
+{% include "header.html" %}
+
+<div class="container">
+
+	<div class="CatalogItem">
+	<h1>{{i.title}}</h1>
+	<p>Short Name: {{i.name}}</p>
+	<h3>Product Description:</h3>
+	<p>{{i.description}}</p>
+
+	<div class="row">
+		<img class="img-thumbnail img-responsive center-block" width="300px" src="{{i.img}}" alt="{{i.name}}">
+	</div>
+
+	<p>Price:{{i.price}}</p>
+	<p>Category: {{i.category.name}}</p>
+
+<p>Uploaded by: {{i.user.name}}
+<img class="profile_pic" src="/static/{{i.user.picture}}" style="border-radius: 50%; width: 60px; height: 60px;"></img>
+</p>
+
+<a href="{{url_for('categoryMenu', cat_name=cat_name ) }}">Back</a>
+
+
+
+</div>
+</div>
+
+</body></html>

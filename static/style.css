@@ -19,12 +19,15 @@ a {text-decoration: none; color:#FFFFCC; font-size: .75em;}
 .flash          { background: #cee5F5; }
 
 .logo {
-	background-color: #FFF39C;
 	/*border-radius: 25px;*/
 	/*color: #FFF39C;*/
 	padding: 10px;
 	font-size: 16pt;
 	font-family: Garamound;
+}
+
+.header-bg {
+    background-color: #FFF39C;
 }
 
 .sidebar ul {
@@ -65,4 +68,10 @@ a {text-decoration: none; color:#FFFFCC; font-size: .75em;}
 
 #content {
 	height: 100%;
+}
+
+.profile_pic {
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
 }
