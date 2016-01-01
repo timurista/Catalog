@@ -9,7 +9,7 @@
 	{% for i in items %}
 
 		<h2>{{i.title}}</h2>
-		<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
+		<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42" onerror="this.src='/static/images/default.png'" />
 
 	<p>{{i.price}}</p>
 	<p>{{i.description[:50]+"..."}}</p>

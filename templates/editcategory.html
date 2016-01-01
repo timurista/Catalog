@@ -3,20 +3,28 @@
 <div class="container">
 <h1>Edit Category</h1>
 Made by: {{category.user.name}}
-<!-- <img class="user_pic" src="/static/{{i.user.picture}}" alt="user image"></img> -->
-{% include "user_pic.html" %}
+<img class="user_pic" src="{{category.user.picture}}" alt="user image"></img>
 
 </div>
 <div class="EditCategory">
-<form action="{{ url_for('editCategory', category=category) }}" method='POST'>
+<form action="{{ url_for('editCategory', category=category, cat_name=cat_name) }}" method='POST'>
 	<h2>{{category.name}}</h2>
-	<div class="form-group">
+	<div class="form-group" id="form">
+		<p class="text-danger" id="warningMessage"></p>
 		<label for="name">Category Name:</label><input type="text" size='30' name='name' value='{{category.name}}' class="form-control" id="nameInput">
 	</div>
 
 <input type="submit" value='Edit' id="submitInput">
 
 <a href="{{url_for('showCatalog' ) }}">Cancel</a>
+
+
+<p>Current Categoires (cannot use the name)</p>
+<ul>
+{% for cat in categories %}
+	<li>{{cat.name}}</li>
+{% endfor %}
+</ul>
 
 </form>
 <!-- INSERT YOUR CODE HERE -->
@@ -25,16 +33,35 @@ Made by: {{category.user.name}}
 <script>
 	$(document).ready(function() {
 	     $('input[type="submit"]').prop('disabled', true);
-	     $('#nameInput').keyup(function() { 
-	        if($(this).val() != '') {
-	           $('input[type="submit"]').prop('disabled', false);
+	     $('#nameInput').keyup(function() {
+	     	var categoryNames = 
+	     	[
+	     	{% for cat in categories %} "{{cat.name }}", {% endfor %}
+	     	];
+	     	var text = $(this).val().trim();
+	     	var found = $.inArray(text, categoryNames) > -1;
+
+	     	var empty = (!$.trim($(this).val()));
+
+	        if( empty || found ) {
+	        	$('#form').addClass('has-error');
+	           $('input[type="submit"]').prop('disabled', true).addClass('hidden');
+	           if (found) {
+   	        	$('#warningMessage').text('Category name cannot be in current categories');
+   	        	}
+   	        	else if (empty) {
+   	        	$('#warningMessage').text('Category name cannot be empty');
+   	        	}	
 	        }
-	        {% endif %}
+	        else {
+	        	$('#form').removeClass('has-error');
+	        	$('#warningMessage').text('');
+	           $('input[type="submit"]').prop('disabled', false).removeClass('hidden');
+	        }
 	     });
 	 });
 	// $("#nameInput").onchange( function( {
 	// $("#submitInput").attr('disabled','true')
-		
-	})
+	
 </script>
 </body></html>

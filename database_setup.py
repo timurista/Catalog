@@ -64,7 +64,10 @@ class CatalogItem(Base):
 			'price' : self.price,
 			'img' : self.img,
 			'category_id' : self.category_id,
-			'timestamp' : self.timestamp,
+			'category_name' : self.category.name,
+			'timestamp' : str( self.timestamp ),
+			'user_id' : self.user_id,
+			'user_name' : self.user.name,
 		}
 
 #### insert at end of file ###

@@ -4,12 +4,12 @@
 		{% for i in items %}
 
 			<h2><a href="{{url_for('showCatalogItem', cat_name = category.name, catalogItem = i.name, item_id=i.id ) }}">{{i.title}}</a></h2>
-			<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
+			<img src="{{i.img}}" alt="{{i.name}}" class="user_pic" onerror="this.src='/static/images/default.png'" />
 
 		<p>{{i.price}}</p>
 		<p>{{i.description[:50]+"..."}}</p>
 
-		<p>Uploaded by: {{i.user.name}} <img src="{{i.user.pciture}}" class="user_pic" alt="{{i.user.name}}'s profile image"></p>
+		<p>Uploaded by: {{i.user.name}} <img src="{{i.user.picture}}" class="user_pic" alt="{{i.user.name}}'s profile image"></p>
 
 		{% endfor %}
 

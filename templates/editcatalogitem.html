@@ -23,7 +23,7 @@ Made by: {{i.user.name}}
 	<div class="row">
 		<label for="img">Image Url:</label>
 		<input type="text" name="img"  class="form-control" value={{i.img}}>
-		<img class="img-thumbnail img-responsive center-block" width="300px" src="{{i.img}}" alt="{{i.name}}">
+		<img class="img-thumbnail img-responsive center-block" width="300px" src="{{i.img}}" alt="{{i.name}}" onerror="this.src='/static/images/default.png'" >
 	</div>
 
 	<label for="price">Price:</label>

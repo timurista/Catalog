@@ -29,30 +29,8 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-# TODO: extra credit, include cart item to track user additions
-
-
-
-
-'''
-TODO:
-1. fix so new categories can be made (no sql conflicts)
-2. vagrant up
-3. instructions for init.py file to populate db
-4. update readme file
-
--- cleanup
-5. remove legacy code
-6. submit project
-
---extra
-7. sign in with facebook
-8. add cart option
-
-'''
-
-
-
+# TODO EXTRA: include cart item to track user additions
+# TODO EXTRA: implement sign in with facebook 
 
 
 ###################### OAUTH
@@ -276,7 +254,7 @@ def checkUserIsCorrectUser(editedItem):
     return editedItem.user_id != login_session['user_id']
 
 def thereIsADuplicateCategory(cat_name):
-    return session.query(Category).filter_by(cat_name)
+    return session.query(Category).filter_by(name=cat_name).all()
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 
@@ -318,7 +296,7 @@ def gdisconnect():
 ## END OAUTH
 
 # Making an API Endpoint (GET Request)
-@app.route('/category/<cat_name>/catalog/JSON')
+@app.route('/category/<cat_name>/JSON')
 def categoryMenuJSON(cat_name):    
     category = session.query(Category).filter_by(name = cat_name).one()
     items = session.query(CatalogItem).all()
@@ -345,15 +323,15 @@ def showCatalog():
     items = session.query(CatalogItem).order_by(CatalogItem.timestamp.desc()).all()
     return render_template('latest.html', items = items, category="Latest", categories=categories, cat_name="Latest", login_session=login_session)
 
-# For managing categories
+# For creating new categories
 @app.route('/category/new/', methods=['POST', 'GET'])
 def newCategory(cat_name=""):
     checkLoginAndRedirect()
-    print "where is it breaking?!?!"
 
     if request.method == 'POST':
         if thereIsADuplicateCategory(request.form['name']):
-            return "<p>Duplicate category cannot be created</p>"
+            print "The name of the category is repeated"
+            return "<p>Duplicate category cannot be created... go back and try again</p>"
         category = Category(
             name = request.form['name'], 
             # store reference to user when created
@@ -367,10 +345,9 @@ def newCategory(cat_name=""):
 
 @app.route('/category/<cat_name>/edit/', methods=['POST', 'GET'])
 def editCategory(cat_name):
-    print checkLogin()
     checkLoginAndRedirect()
     editedItem = session.query(Category).filter_by(name=cat_name).one()
-    categories = session.query(Category).all()
+    categories = session.query(Category).filter(Category.name!=cat_name).all()
 
     if checkUserIsCorrectUser(editedItem):
         return render_template('unauthorized_access.html')
@@ -382,7 +359,7 @@ def editCategory(cat_name):
         flash("category updated!")
         return redirect(url_for('showCatalog', cat_name = category.name, login_session=login_session, categories = categories))
     else:
-        return render_template('editcategory.html', cat_name = cat_name, login_session=login_session)
+        return render_template('editcategory.html', cat_name = cat_name, category=editedItem, login_session=login_session, categories=categories)
 
 @app.route('/category/<cat_name>/delete/', methods=['POST', 'GET'])
 def deleteCategory(cat_name):
@@ -398,7 +375,7 @@ def deleteCategory(cat_name):
         flash("%s catalog item was deleted" % item.name)
         return redirect(url_for('showCatalog', cat_name = cat_name, login_session=login_session))
     else:
-        return render_template('deletecategory.html', cat_name = cat_name, catalogItem = catalogItem, item = item, login_session=login_session)
+        return render_template('deletecategory.html', cat_name = cat_name, category = item, login_session=login_session)
 
 @app.route('/category/<cat_name>')
 @app.route('/category/<cat_name>/')
@@ -446,9 +423,7 @@ def editCatalogItem(cat_name, catalogItem, item_id):
     editedItem = session.query(CatalogItem).filter_by(id = item_id).one()
     categories = session.query(Category).all()
     
-    print request.method
-    print editedItem
-
+    # handle CSRF using oauth tokens
     if checkUserIsCorrectUser(editedItem):
         return render_template('unauthorized_access.html')
     if request.method == 'POST':
@@ -475,12 +450,12 @@ def editCatalogItem(cat_name, catalogItem, item_id):
             i = editedItem, categories = categories, login_session=login_session)
 
 # A route for deleteCatalogItem function here
-# TODO: handle CSRF using oauth tokens
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/delete/', methods = ['GET', 'POST'])
 def deleteCatalogItem(cat_name, catalogItem, item_id):
     checkLoginAndRedirect()
     item = session.query(CatalogItem).filter_by(id = item_id).one()
+    # handle CSRF using oauth tokens
     if checkUserIsCorrectUser(item):
         return render_template('unauthorized_access.html')
 
