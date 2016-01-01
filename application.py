@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Restaurant Menu Application"
+APPLICATION_NAME = "Catalog Web App"
 
 
 # Connect to Database and create database session
@@ -31,13 +31,9 @@ session = DBSession()
 
 # TODO EXTRA: include cart item to track user additions
 # TODO EXTRA: implement sign in with facebook 
-
+# TODO EXTRA: have sign in redirect locally, not login-page
 
 ###################### OAUTH
-
-CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Catalog Web App"
 
 # Create anti-forgery state token
 @app.route('/login')
