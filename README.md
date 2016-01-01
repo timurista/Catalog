@@ -6,17 +6,17 @@ First you must install vagrant or another virtual system to run Postgres or psql
 
 After you have a virtual machine up and running, make sure to set up the database by typing the following and then hit enter:
 
-	` python data_base.py `
+    python data_base.py
 
 Then (optionally) to populate the db with values type
 
-	` python init_database.py `
+    python init_database.py
 
 If the database at any point becomes faulty, you can delete the "catalog.db" file and redue the above process to reset all values.
 
 Finally, type the following to get the server up and running at localhost:8000/
 
-	` python application.py `
+    python application.py
 
 Type "\q" to exit.
 
