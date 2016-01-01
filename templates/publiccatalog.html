@@ -1,22 +1,18 @@
 {% extends "layout.html" %}
-{% block content %}
+{% block content %}	
+	<div class="row">
+		{% for i in items %}
 
-	<div class="col-sm-9">
-		<div class="row">
-			{% for i in items %}
+			<h2><a href="{{url_for('showCatalogItem', cat_name = category.name, catalogItem = i.name, item_id=i.id ) }}">{{i.title}}</a></h2>
+			<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
 
-				<h2><a href="{{url_for('showCatalogItem', cat_name = category.name, catalogItem = i.name, item_id=i.id ) }}">{{i.title}}</a></h2>
-				<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
+		<p>{{i.price}}</p>
+		<p>{{i.description[:50]+"..."}}</p>
 
-			<p>{{i.price}}</p>
-			<p>{{i.description[:50]+"..."}}</p>
+		<p>Uploaded by: {{i.user.name}} <img src="{{i.user.pciture}}" class="user_pic" alt="{{i.user.name}}'s profile image"></p>
 
-			<p>Uploaded by: {{i.user.name}} <img src="{{i.user.pciture}}" alt="{{i.user.name}}'s profile image"></p>
-
-			{% endfor %}
-
-		</div>
+		{% endfor %}
 
 	</div>
-
+	
 {% endblock %}

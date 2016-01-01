@@ -17,7 +17,7 @@
 	<p>Category: {{i.category.name}}</p>
 
 <p>Uploaded by: {{i.user.name}}
-<img class="profile_pic" src="/static/{{i.user.picture}}" style="border-radius: 50%; width: 60px; height: 60px;"></img>
+{% include "user_pic.html" %}
 </p>
 
 <a href="{{url_for('categoryMenu', cat_name=cat_name ) }}">Back</a>

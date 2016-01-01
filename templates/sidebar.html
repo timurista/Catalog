@@ -1,11 +1,16 @@
-<div class="col-sm-3 sidebar" id="">
-	<ul>
-		{% for cat in categories %}
-		<li class="category">
-			<h4>
-				<a href="{{url_for('categoryMenu', cat_name = cat.name) }}" >{{cat.name}}</a>
-			</h4>
-		</li>
-		{% endfor %}
-	</ul>
-</div>
+<ul>
+	{% if 'username' in login_session %}
+	<p> <a href="{{url_for('newCategory') }}">New Category</a> </p>
+	{% endif %}
+	{% for cat in categories %}
+	<li class="category">
+		<h4>
+			<a href="{{url_for('categoryMenu', cat_name = cat.name) }}" >{{cat.name}}</a>
+		</h4>
+		{% if 'username' in login_session %}
+		<p> <a href="{{url_for('editCategory', cat_name = cat.name) }}">Edit</a> </p>
+		<p> <a href="{{url_for('deleteCategory', cat_name = cat.name) }}">Delete</a> </p>
+		{% endif %}
+	</li>
+	{% endfor %}
+</ul>

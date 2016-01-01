@@ -8,14 +8,15 @@ p, dd, dt               { color: #CCCCCC;}
 
 a {text-decoration: none; color:#FFFFCC; font-size: .75em;}
 */
-.pane {position:absolute; left: 25%; border: 2px solid;
+/*.pane {position:absolute; left: 25%; border: 2px solid;
     border-radius: 25px; padding: 5px; margin: 5px; border-color: #999999; background-color: #333333 }
+*/
 .header         {left:50%; text-align: center;}
-.name {width:50%;display: inline-block; float: left;}
+/*.name {width:50%;display: inline-block; float: left;}
 .description {}
 .price {text-align: right; width:50%; float: right; }
 .editdeletepane{}
-
+*/
 .flash          { background: #cee5F5; }
 
 .logo {
@@ -30,25 +31,25 @@ a {text-decoration: none; color:#FFFFCC; font-size: .75em;}
     background-color: #FFF39C;
 }
 
+
 .sidebar ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    width: 200px;
     background-color: #f1f1f1;
-    border: 1px solid #555;
+    /*border: 1px solid #555;*/
 }
 
 .sidebar li a {
-    display: block;
+    /*display: block;*/
     color: #000;
-    padding: 8px 16px;
+    padding: 2px 4px;
     text-decoration: none;
 }
 
 .sidebar li {
     text-align: center;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid #ccc;
 }
 
 .sidebar li:last-child {
@@ -72,6 +73,13 @@ a {text-decoration: none; color:#FFFFCC; font-size: .75em;}
 
 .profile_pic {
     border-radius: 50%;
-    width: 42px;
     height: 42px;
 }
+
+.user_pic {
+    height: 60px;
+    width: 60px;
+    border-radius: 50%;
+}
+
+

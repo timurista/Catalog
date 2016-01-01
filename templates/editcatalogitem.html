@@ -1,14 +1,11 @@
-
-<!-- saved from url=(0087)https://storage.googleapis.com/supplemental_media/udacityu/3598388784/editmenuitem.html -->
-<!-- <html class=" FB_FW_ext GCPlugin2"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"></head><body>
-
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
 {% include "header.html" %}
 
 <div class="container">
 <h1>Edit Menu Item</h1>
 Made by: {{i.user.name}}
-<img class="profile_pic" src="/static/{{i.user.picture}}" style="border-radius: 50%; width: 60px; height: 60px;"></img>
+{% include "user_pic.html" %}
+
+</div>
 <div class="EditCatalogItem">
 <form action="{{ url_for('editCatalogItem', cat_name=cat_name, catalogItem = catalogItem, item_id = i.id) }}" method='POST'>
 	<h2>{{i.name}}</h2>
@@ -48,7 +45,6 @@ Made by: {{i.user.name}}
 <a href="{{url_for('categoryMenu', cat_name=cat_name ) }}">Cancel</a>
 
 </form>
-<!-- INSERT YOUR CODE HERE -->
 </div>
 </div>
 

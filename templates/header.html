@@ -22,11 +22,11 @@
 			<div class="col-md-4 col-lg-4 text-right">
 				{% if not 'username' in login_session %}
 				<p><a href="/login">Sign in here!
-					<img src="/static/images/empty_profile_pic.png" alt="empty profile pic" style="width: 42px; height=42px; border-radius: 50%;"></a>
+					<img src="/static/images/empty_profile_pic.png" alt="empty profile pic" class="profile_pic"></a>
 				{% else %}
 				<p>
 					<a href="/gdisconnect">{{login_session['username']}}, Sign out here!
-						<img src="{{login_session['picture']}}" alt="my profile pic" style="width: 42px; height=42px; border-radius: 50%;"></a>
+						<img src="{{login_session['picture']}}" alt="my profile pic" class="profile_pic"></a>
 				</p>
 
 				{% endif %}

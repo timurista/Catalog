@@ -28,11 +28,11 @@ session.query(CatalogItem).delete()
 session.query(User).delete()
 
 # for User information
-user1 = User(name="User 1 - Luke", email="skywalkerules@gmail.com", picture="images/luke_profile.jpg")
+user1 = User(name="User 1 - Luke", email="skywalkerules@gmail.com", picture="/static/images/luke_profile.jpg")
 session.add(user1)
 session.commit()
 
-user2 = User(name="User 2- Vader", email="darksideiscallingyou@gmail.com", picture="images/vader_profile.jpg")
+user2 = User(name="User 2- Vader", email="darksideiscallingyou@gmail.com", picture="/static/images/vader_profile.jpg")
 session.add(user2)
 session.commit()
 

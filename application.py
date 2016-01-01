@@ -36,19 +36,19 @@ session = DBSession()
 
 '''
 TODO:
-1. make sure other users cannot enter information
-2. make edit,new, delete for category
-2. RSS feed
-3. add cart option
-4. sign in with facebook
-4. vagrant up
-5. instructions for init.py file to populate db
-6. update readme file
-7. restyle app
+1. fix so new categories can be made (no sql conflicts)
+2. vagrant up
+3. instructions for init.py file to populate db
+4. update readme file
+
 -- cleanup
-8. remove legacy code
-9. update function names
-10. submit project
+5. remove legacy code
+6. submit project
+
+--extra
+7. sign in with facebook
+8. add cart option
+
 '''
 
 
@@ -264,19 +264,19 @@ def getUserID(email):
         return None
 
 def checkLogin():
-    if 'username' not in login_session:
-        return True
-    else:
-        return False
+    print 'username' in login_session
+    return ('username' in login_session)
 
-def checkLoginAndRedirect(url="/login"):
-    # TODO: check user name is correct username
-    if not checkLogin() or login_session['username']:
+def checkLoginAndRedirect(url="/login"):    
+    if not checkLogin():
         return redirect(url)
 
 def checkUserIsCorrectUser(editedItem):
-  if editedItem.user_id != login_session['user_id']:
-    return "<script>function myAlert() {alert('You are not authorized to delete this restaurant or edit this item. Please create your own restaurant in order to delte or add.');}</script><body onload=myAlert()''>"
+    print editedItem.user_id, login_session['user_id']
+    return editedItem.user_id != login_session['user_id']
+
+def thereIsADuplicateCategory(cat_name):
+    return session.query(Category).filter_by(cat_name)
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 
@@ -313,10 +313,6 @@ def gdisconnect():
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
-    # else:
-    #     # login_session = []
-    #     redirect('/catalog')
-    #     return "<p>logging out..</p>" + result['status']
 
 
 ## END OAUTH
@@ -334,9 +330,12 @@ def categoryCatalogItemJSON(cat_name, catalogItem, item_id):
     item = session.query(CatalogItem).filter_by(id = item_id).one()
     return jsonify(CatalogItems = item.serialize )
 
-
-# TODO: Additional API Endpoints RSS, Atom, XML
-
+@app.route('/catalog/RSS')
+@app.route('/rss')
+@app.route('/RSS')
+def catalogRSS():
+    items = session.query(CatalogItem).order_by(CatalogItem.timestamp.desc()).all()
+    return render_template('rss.xml', items=items)
 
 @app.route('/')
 @app.route('/latest') 
@@ -347,21 +346,59 @@ def showCatalog():
     return render_template('latest.html', items = items, category="Latest", categories=categories, cat_name="Latest", login_session=login_session)
 
 # For managing categories
-@app.route('/category/new/')
-def newCategory():
+@app.route('/category/new/', methods=['POST', 'GET'])
+def newCategory(cat_name=""):
     checkLoginAndRedirect()
-    return render_template('newcategory.html')
+    print "where is it breaking?!?!"
 
-@app.route('/category/<cat_name>/edit/')
+    if request.method == 'POST':
+        if thereIsADuplicateCategory(request.form['name']):
+            return "<p>Duplicate category cannot be created</p>"
+        category = Category(
+            name = request.form['name'], 
+            # store reference to user when created
+            user = getUserInfo(login_session['user_id']))
+        session.add(category)
+        session.commit()
+        flash("new category created!")
+        return redirect(url_for('showCatalog', cat_name = category.name, login_session=login_session))
+    else:
+        return render_template('newcategory.html', login_session=login_session, categories = session.query(Category).all())
+
+@app.route('/category/<cat_name>/edit/', methods=['POST', 'GET'])
 def editCategory(cat_name):
+    print checkLogin()
     checkLoginAndRedirect()
-    return render_template('editcategory.html')
+    editedItem = session.query(Category).filter_by(name=cat_name).one()
+    categories = session.query(Category).all()
 
-@app.route('/category/<cat_name>/delete/')
+    if checkUserIsCorrectUser(editedItem):
+        return render_template('unauthorized_access.html')
+    if request.method == 'POST' and editedItem:
+        editedItem['name'] = request.form['name']
+        editedItem['user'] = getUserInfo(login_session['user_id'])
+        session.add(editedItem)
+        session.commit()
+        flash("category updated!")
+        return redirect(url_for('showCatalog', cat_name = category.name, login_session=login_session, categories = categories))
+    else:
+        return render_template('editcategory.html', cat_name = cat_name, login_session=login_session)
+
+@app.route('/category/<cat_name>/delete/', methods=['POST', 'GET'])
 def deleteCategory(cat_name):
     checkLoginAndRedirect()
-    return render_template('deletecategory.html')
+    item = session.query(Category).filter_by(name = cat_name).one()
 
+    if checkUserIsCorrectUser(item):
+        return render_template('unauthorized_access.html')
+
+    if request.method == 'POST':
+        session.delete(item)
+        session.commit()
+        flash("%s catalog item was deleted" % item.name)
+        return redirect(url_for('showCatalog', cat_name = cat_name, login_session=login_session))
+    else:
+        return render_template('deletecategory.html', cat_name = cat_name, catalogItem = catalogItem, item = item, login_session=login_session)
 
 @app.route('/category/<cat_name>')
 @app.route('/category/<cat_name>/')
@@ -369,7 +406,7 @@ def categoryMenu(cat_name="Soccer"):
     category = session.query(Category).filter_by(name = cat_name).one()
     categories = session.query(Category).all()
     items = session.query(CatalogItem).filter_by(category_id=category.id)
-    if checkLogin():
+    if not checkLogin():
         return render_template('publiccatalog.html', category=category, items = items, categories=categories, cat_name=cat_name, login_session=login_session)
     else:
         return render_template('catalog.html', category=category, items = items, categories=categories, cat_name=cat_name, login_session=login_session)
@@ -386,13 +423,13 @@ def newCatalogItem(cat_name):
             img = request.form['img'],
             category_id = category.id,
             # store reference to user when created
-            user = getUserInfo())
+            user = getUserInfo(login_session['user_id']))
         session.add(newItem)
         session.commit()
         flash("new catalog item created!")
-        return redirect(url_for('categoryMenu', cat_name = cat_name))
+        return redirect(url_for('categoryMenu', cat_name = cat_name, login_session=login_session))
     else:
-        return render_template('newcatalogitem.html', cat_name = cat_name)
+        return render_template('newcatalogitem.html', cat_name = cat_name, login_session=login_session)
 
 # TODO: Make route for displayOnly
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>')
@@ -401,7 +438,7 @@ def showCatalogItem(cat_name, catalogItem, item_id):
     categories = session.query(Category).all()
     return render_template('publiccatalogitem.html', 
         cat_name = cat_name, catalogItem = catalogItem, 
-        i = publicItem)
+        i = publicItem, login_session=login_session)
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/edit/', methods = ['GET', 'POST'])
 def editCatalogItem(cat_name, catalogItem, item_id):
@@ -411,6 +448,9 @@ def editCatalogItem(cat_name, catalogItem, item_id):
     
     print request.method
     print editedItem
+
+    if checkUserIsCorrectUser(editedItem):
+        return render_template('unauthorized_access.html')
     if request.method == 'POST':
         print request.form['name']
         if request.form['name']:
@@ -429,10 +469,10 @@ def editCatalogItem(cat_name, catalogItem, item_id):
         session.add(editedItem)
         session.commit()
         flash("%s catalog item updated!" % editedItem.name)
-        return redirect(url_for('categoryMenu', cat_name = cat_name))
+        return redirect(url_for('categoryMenu', cat_name = cat_name, login_session=login_session))
     else:
         return render_template('editcatalogitem.html', cat_name = cat_name, catalogItem = catalogItem, 
-            i = editedItem, categories = categories)
+            i = editedItem, categories = categories, login_session=login_session)
 
 # A route for deleteCatalogItem function here
 # TODO: handle CSRF using oauth tokens
@@ -441,15 +481,16 @@ def editCatalogItem(cat_name, catalogItem, item_id):
 def deleteCatalogItem(cat_name, catalogItem, item_id):
     checkLoginAndRedirect()
     item = session.query(CatalogItem).filter_by(id = item_id).one()
-    checkUserIsCorrectUser(item)
+    if checkUserIsCorrectUser(item):
+        return render_template('unauthorized_access.html')
 
     if request.method == 'POST':
         session.delete(item)
         session.commit()
         flash("%s catalog item was deleted" % item.name)
-        return redirect(url_for('categoryMenu', cat_name = cat_name))
+        return redirect(url_for('categoryMenu', cat_name = cat_name, login_session=login_session))
     else:
-        return render_template('deletecatalogitem.html', cat_name = cat_name, catalogItem = catalogItem, item = item)
+        return render_template('deletecatalogitem.html', cat_name = cat_name, catalogItem = catalogItem, item = item, login_session=login_session)
 
 
 

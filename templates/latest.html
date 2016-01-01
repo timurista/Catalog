@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 
-<!-- custom title -->
-<!-- {% block section_title %}
-<h1>Latest Items</h1>
-{% endblock %} -->
+{% block section_title %}
+<h1>Latest Entries</h1>
+<a href="/rss">RSS feed link here</a>
+{% endblock %}
 
 {% block content %}
 
@@ -13,7 +13,7 @@
 
 			<p>
 			<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42">
-			<strong>{{i.name}}</strong>, <em> {{i.price}} </em>
+			<a href="{{url_for('showCatalogItem', cat_name=i.category.name, catalogItem = i.name, item_id = i.id)}}"><strong>{{i.name}}</strong></a>, <em> {{i.price}} </em>
 			{{i.description[:20]+"..."}} ({{i.category.name}}) - <em>{{i.timestamp.strftime("%a, %b %d %Y") }} </em>
 			</p>
 			

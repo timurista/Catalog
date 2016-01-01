@@ -1,0 +1,40 @@
+{% include "header.html" %}
+
+<div class="container">
+<h1>Edit Category</h1>
+Made by: {{category.user.name}}
+<!-- <img class="user_pic" src="/static/{{i.user.picture}}" alt="user image"></img> -->
+{% include "user_pic.html" %}
+
+</div>
+<div class="EditCategory">
+<form action="{{ url_for('editCategory', category=category) }}" method='POST'>
+	<h2>{{category.name}}</h2>
+	<div class="form-group">
+		<label for="name">Category Name:</label><input type="text" size='30' name='name' value='{{category.name}}' class="form-control" id="nameInput">
+	</div>
+
+<input type="submit" value='Edit' id="submitInput">
+
+<a href="{{url_for('showCatalog' ) }}">Cancel</a>
+
+</form>
+<!-- INSERT YOUR CODE HERE -->
+</div>
+</div>
+<script>
+	$(document).ready(function() {
+	     $('input[type="submit"]').prop('disabled', true);
+	     $('#nameInput').keyup(function() { 
+	        if($(this).val() != '') {
+	           $('input[type="submit"]').prop('disabled', false);
+	        }
+	        {% endif %}
+	     });
+	 });
+	// $("#nameInput").onchange( function( {
+	// $("#submitInput").attr('disabled','true')
+		
+	})
+</script>
+</body></html>

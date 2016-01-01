@@ -1,37 +1,24 @@
+{% include "header.html" %}
+<div class="row">
+	<div class="header">				
+		{% include "messages.html" %}
 
-
-		{% include "header.html" %}
-		<div class="row">
-			<div class="header">				
-				{% include "messages.html" %}
-
-				{% block section_title %}
-				
-				<h1>{{cat_name}}</h1>
-				{% endblock %}
-			</div>
+		{% block section_title %}
+		<h1>{{cat_name}}</h1>
+		{% endblock %}
 		</div>
-		<hr>
-		<div class="row" id="content">
-			
-			{% block sidebar %}
-			<div class="col-sm-3 sidebar" id="sidebar">
-				<ul>
-					{% for cat in categories %}
-					<li class="category">
-						<h4>
-							<a href="{{url_for('categoryMenu', cat_name = cat.name) }}" >{{cat.name}}</a>
-						</h4>
-					</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% endblock %}
-
-			<!-- content goes here -->
+	</div>
+	<hr>
+	<div class="row" id="content">
+		
+		<div class="col-sm-4 col-sm-3 sidebar">
+			{% include 'sidebar.html' %}
+		</div>
+		<div class="col-md-8 col-sm-9">
 			{% block content %}{% endblock %}			
 		</div>
 	</div>
-	<div id="footer"></div>
+</div>
+<div id="footer"></div>
 </body>
 </html>

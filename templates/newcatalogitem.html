@@ -1,5 +1,5 @@
-<html>
-<body>
+{% include "header.html" %}
+
 <h1> New Menu Item in "{{cat_name}}"</h1>
 
 <form action="{{url_for('newCatalogItem', cat_name = cat_name )}}" method = 'POST'>
