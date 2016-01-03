@@ -8,16 +8,21 @@
 <div class="row">
 	{% for i in items %}
 
-		<h2>{{i.title}}</h2>
+		<h2><a href="{{url_for('showCatalogItem', cat_name = category.name, catalogItem = i.name, item_id = i.id ) }}">
+			{{i.title}}</a></h2>
 		<img src="{{i.img}}" alt="{{i.name}}" height="42" width="42" onerror="this.src='/static/images/default.png'" />
 
 	<p>{{i.price}}</p>
 	<p>{{i.description[:50]+"..."}}</p>
+
+		{% if 'username' in login_session and login_session['username'] == i.user.name %}
+
 	<p> <a href="{{url_for('editCatalogItem', cat_name = category.name, catalogItem = i.name, item_id = i.id ) }}">Edit</a></p>
 
 		<p> <a href="{{url_for('deleteCatalogItem', cat_name = category.name, catalogItem = i.name,
 		item_id = i.id ) }}">Delete</a> </p>
-			{% endfor %}
+		{% endif %}
+	{% endfor %}
 
 </div>
 

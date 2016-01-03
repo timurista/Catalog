@@ -25,6 +25,9 @@
 <input type='submit' value='Create'>
 
 <a href="{{url_for('categoryMenu', cat_name = cat_name ) }}">Cancel</a>
+
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
 </form>
 
 </body>

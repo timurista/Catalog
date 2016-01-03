@@ -26,6 +26,7 @@ Made by: {{category.user.name}}
 {% endfor %}
 </ul>
 
+<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 </form>
 <!-- INSERT YOUR CODE HERE -->
 </div>

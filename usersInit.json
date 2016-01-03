@@ -1,0 +1,16 @@
+{
+  "Users": [
+    {
+      "picture": "/static/images/luke_profile.jpg", 
+      "email": "skywalkerules@gmail.com", 
+      "name": "User 1 - Luke", 
+      "id": 1
+    }, 
+    {
+      "picture": "/static/images/vader_profile.jpg", 
+      "email": "darksideiscallingyou@gmail.com", 
+      "name": "User 2- Vader", 
+      "id": 2
+    }
+  ]
+}
