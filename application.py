@@ -15,6 +15,9 @@ import json
 from flask import make_response
 import requests
 
+# To use with decorators and url functions
+import functools
+
 # To prevent XSFR
 from flask.ext.seasurf import SeaSurf
 
@@ -36,7 +39,6 @@ session = DBSession()
 
 # TODO EXTRA: include cart item to track user additions
 # TODO EXTRA: implement sign in with facebook
-# TODO EXTRA: have sign in redirect locally, not login-page
 
 # OAUTH
 
@@ -46,7 +48,6 @@ def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
-    # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
 
@@ -64,8 +65,10 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?'
+    url += 'grant_type=fb_exchange_token&client_id=%s' % (app_id)
+    url += '&client_secret=%s&fb_' % (app_secret)
+    url += 'exchange_token=%s' % (access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
@@ -92,7 +95,8 @@ def fbconnect():
     login_session['access_token'] = stored_token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.4/'
+    url += 'me/picture?%s&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -112,7 +116,9 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;'
+    output += 'border-radius: 150px;-webkit-border-radius: 150px;'
+    output += '-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -128,6 +134,7 @@ def fbdisconnect():
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
+
 
 @csrf.exempt
 @app.route('/gconnect', methods=['POST'])
@@ -181,8 +188,10 @@ def gconnect():
     stored_credentials = login_session.get('credentials')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_credentials is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+        response = make_response(
+            json.dumps(
+                'Current user is already connected.'
+            ), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -215,8 +224,12 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-    flash("you are now logged in as %s" % login_session['username'])
+    output += ' " style = "width: 300px; height: 300px;'
+    output += 'border-radius: 150px;'
+    output += '-webkit-border-radius: 150px;'
+    output += '-moz-border-radius: 150px;"> '
+    flash("you are now logged in as %s" %
+          login_session['username'])
     print "done!"
     return output
 
@@ -236,6 +249,7 @@ def getUserInfo(user_id):
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
+
 def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
@@ -245,12 +259,21 @@ def getUserID(email):
 
 # Authorization and Authentication helpers
 
+
 def checkLogin():
+    ''' returns true if user is logged in '''
     return (login_session and 'username' in login_session)
 
+
 def checkLoginAndRedirect(url="/login"):
+    '''
+    check that the user is logged in
+    if not, then abort 405 and send to
+    login page
+    '''
     if not checkLogin():
         abort(405)
+
 
 def checkUserIsCorrectUser(editedItem):
     ''' check that the user who edited the item is the current user'''
@@ -271,10 +294,9 @@ def checkAndAbort(cat_name="", func=check_duplicate, error_code=441):
         print "duplicate names should not be entered!"
         abort(403)
 
-# decorator to handle security
-import functools
-
 # function tools to properly wrap decorator for flask
+
+
 def checkAuthorization(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
@@ -284,9 +306,11 @@ def checkAuthorization(f):
 
 # custom error handler pages
 
+
 @app.errorhandler(405)
 def must_be_logged_in(e):
     return redirect('/login')
+
 
 @app.errorhandler(403)
 def page_not_found(e):
@@ -307,7 +331,7 @@ def gdisconnect():
         return response
 
     access_token = credentials.access_token
-    print 'access_token ',access_token
+    print 'access_token ', access_token
 
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
@@ -331,8 +355,8 @@ def gdisconnect():
         # For whatever reason, the given token was invalid.
         print result['status']
         response = make_response(
-            json.dumps('Failed to revoke token for given user. %s' 
-                % result, 400))
+            json.dumps('Failed to revoke token for given user. %s'
+                       % result, 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -351,15 +375,19 @@ def categoryMenuJSON(cat_name):
     return jsonify(CategoryItems=[i.serialize for i in items])
 
 # get all items in the catalog
+
+
 @app.route('/catalog/JSON')
 def catalogJSON():
-    """ catalogJSON returns json file with all catalog items"""    
+    """ catalogJSON returns json file with all catalog items"""
     items = session.query(CatalogItem).all()
     print "catalog"
     print jsonify(CatalogItems=[i.serialize for i in items])
     return jsonify(CatalogItems=[i.serialize for i in items])
 
 # get all categories in the catalog
+
+
 @app.route('/catalog/categories/JSON')
 def categoriesJSON():
     """ categoriesJSON returns json file with all categories"""
@@ -369,19 +397,25 @@ def categoriesJSON():
     return jsonify(Categories=[i.serialize for i in items])
 
 # get all users registered on this site
+
+
 @app.route('/catalog/users/JSON')
 def usersJSON():
-    """ usersJSON returns json object with all users if admin user is logged in """
+    """
+    usersJSON returns json object with
+    all users if admin user is logged in
+    """
     #  check that user has admin property, else abort
-    
+
     amdin_email = "timothy.urista@gmail.com"
 
-    if amdin_email != login_session['email']:        
+    if amdin_email != login_session['email']:
         abort(403)
 
     return jsonify(Users=[i.serialize for i in items])
 
 # Get one Menu Item JSON
+
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/JSON')
 def categoryCatalogItemJSON(cat_name, catalogItem, item_id):
@@ -414,12 +448,12 @@ def showCatalog():
     categories = session.query(Category).all()
     items = session.query(CatalogItem).order_by(
         CatalogItem.timestamp.desc()).all()
-    return render_template('latest.html', 
-        items=items, 
-        category="Latest", 
-        categories=categories, 
-        cat_name="Latest", 
-        login_session=login_session)
+    return render_template('latest.html',
+                           items=items,
+                           category="Latest",
+                           categories=categories,
+                           cat_name="Latest",
+                           login_session=login_session)
 
 
 @app.route('/category/new/', methods=['POST', 'GET'])
@@ -430,7 +464,6 @@ def newCategory(cat_name=""):
     args:
         takes post method and category name
     """
-    
 
     if request.method == 'POST':
 
@@ -443,13 +476,13 @@ def newCategory(cat_name=""):
         session.add(category)
         session.commit()
         flash("new category created!")
-        return redirect(url_for('showCatalog', 
-            cat_name=category.name, 
-            login_session=login_session))
+        return redirect(url_for('showCatalog',
+                                cat_name=category.name,
+                                login_session=login_session))
     else:
-        return render_template('newcategory.html', 
-            login_session=login_session, 
-            categories=session.query(Category).all())
+        return render_template('newcategory.html',
+                               login_session=login_session,
+                               categories=session.query(Category).all())
 
 
 @app.route('/category/<cat_name>/edit/', methods=['POST', 'GET'])
@@ -465,8 +498,6 @@ def editCategory(cat_name):
     categories = session.query(Category).filter(
         Category.name != cat_name).all()
 
-    
-
     if checkUserIsCorrectUser(editedCategory):
         abort(401)
 
@@ -477,15 +508,15 @@ def editCategory(cat_name):
         session.add(editedCategory)
         session.commit()
         flash("category updated!")
-        return redirect(url_for('showCatalog', 
-            cat_name=editedCategory.name,
-            login_session=login_session, 
-            categories=categories))
+        return redirect(url_for('showCatalog',
+                                cat_name=editedCategory.name,
+                                login_session=login_session,
+                                categories=categories))
     else:
         return render_template('editcategory.html',
-                               cat_name=cat_name, 
-                               category=editedCategory, 
-                               login_session=login_session, 
+                               cat_name=cat_name,
+                               category=editedCategory,
+                               login_session=login_session,
                                categories=categories)
 
 
@@ -498,8 +529,6 @@ def deleteCategory(cat_name):
         takes post method and category name
     """
 
-    
-
     item = session.query(Category).filter_by(name=cat_name).one()
 
     if checkUserIsCorrectUser(item):
@@ -509,14 +538,14 @@ def deleteCategory(cat_name):
         session.delete(item)
         session.commit()
         flash("%s catalog item was deleted" % item.name)
-        return redirect(url_for('showCatalog', 
-            cat_name=cat_name, 
-            login_session=login_session))
+        return redirect(url_for('showCatalog',
+                                cat_name=cat_name,
+                                login_session=login_session))
     else:
-        return render_template('deletecategory.html', 
-            cat_name=cat_name, 
-            category=item, 
-            login_session=login_session)
+        return render_template('deletecategory.html',
+                               cat_name=cat_name,
+                               category=item,
+                               login_session=login_session)
 
 
 @app.route('/category/<cat_name>')
@@ -534,19 +563,19 @@ def categoryMenu(cat_name="Soccer"):
     items = session.query(CatalogItem).filter_by(category_id=category.id)
 
     if not checkLogin():
-        return render_template('publiccatalog.html', 
-            category=category, 
-            items=items, 
-            categories=categories, 
-            cat_name=cat_name, 
-            login_session=login_session)
+        return render_template('publiccatalog.html',
+                               category=category,
+                               items=items,
+                               categories=categories,
+                               cat_name=cat_name,
+                               login_session=login_session)
     else:
-        return render_template('catalog.html', 
-            category=category, 
-            items=items, 
-            categories=categories, 
-            cat_name=cat_name, 
-            login_session=login_session)
+        return render_template('catalog.html',
+                               category=category,
+                               items=items,
+                               categories=categories,
+                               cat_name=cat_name,
+                               login_session=login_session)
 
 
 @app.route('/category/<cat_name>/new/', methods=['GET', 'POST'])
@@ -557,7 +586,6 @@ def newCatalogItem(cat_name):
     args:
         takes post method and category name
     """
-    
 
     if request.method == 'POST':
         category = session.query(Category).filter_by(name=cat_name).one()
@@ -574,13 +602,13 @@ def newCatalogItem(cat_name):
         session.commit()
         flash("new catalog item created!")
 
-        return redirect(url_for('categoryMenu', 
-            cat_name=cat_name, 
-            login_session=login_session))
+        return redirect(url_for('categoryMenu',
+                                cat_name=cat_name,
+                                login_session=login_session))
     else:
-        return render_template('newcatalogitem.html', 
-            cat_name=cat_name, 
-            login_session=login_session)
+        return render_template('newcatalogitem.html',
+                               cat_name=cat_name,
+                               login_session=login_session)
 
 
 @app.route('/category/<cat_name>/<catalogItem>/<int:item_id>')
@@ -593,14 +621,14 @@ def showCatalogItem(cat_name, catalogItem, item_id):
     publicItem = session.query(CatalogItem).filter_by(id=item_id).one()
     categories = session.query(Category).all()
     return render_template('publiccatalogitem.html',
-                           cat_name=cat_name, 
+                           cat_name=cat_name,
                            catalogItem=catalogItem,
-                           i=publicItem, 
+                           i=publicItem,
                            login_session=login_session)
 
 
-@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/edit/', 
-    methods=['GET', 'POST'])
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/edit/',
+           methods=['GET', 'POST'])
 @checkAuthorization
 def editCatalogItem(cat_name, catalogItem, item_id):
     """
@@ -610,8 +638,6 @@ def editCatalogItem(cat_name, catalogItem, item_id):
     """
     editedItem = session.query(CatalogItem).filter_by(id=item_id).one()
     categories = session.query(Category).all()
-
-    
 
     # handles if an incorrect user attempts to access
     if checkUserIsCorrectUser(editedItem):
@@ -634,19 +660,20 @@ def editCatalogItem(cat_name, catalogItem, item_id):
         session.add(editedItem)
         session.commit()
         flash("%s catalog item updated!" % editedItem.name)
-        return redirect(url_for('categoryMenu', 
-            cat_name=cat_name, 
-            login_session=login_session))
+        return redirect(url_for('categoryMenu',
+                                cat_name=cat_name,
+                                login_session=login_session))
     else:
-        return render_template('editcatalogitem.html', 
-            cat_name=cat_name, 
-            catalogItem=catalogItem,
-            i=editedItem, 
-            categories=categories, 
-            login_session=login_session)
+        return render_template('editcatalogitem.html',
+                               cat_name=cat_name,
+                               catalogItem=catalogItem,
+                               i=editedItem,
+                               categories=categories,
+                               login_session=login_session)
 
 
-@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/delete/', methods=['GET', 'POST'])
+@app.route('/category/<cat_name>/<catalogItem>/<int:item_id>/delete/',
+           methods=['GET', 'POST'])
 @checkAuthorization
 def deleteCatalogItem(cat_name, catalogItem, item_id):
     """
@@ -656,8 +683,6 @@ def deleteCatalogItem(cat_name, catalogItem, item_id):
     """
     item = session.query(CatalogItem).filter_by(id=item_id).one()
 
-    
-
     if checkUserIsCorrectUser(item):
         abort(403)
 
@@ -665,16 +690,16 @@ def deleteCatalogItem(cat_name, catalogItem, item_id):
         session.delete(item)
         session.commit()
         flash("%s catalog item was deleted" % item.name)
-        return redirect(url_for('categoryMenu', 
-            cat_name=cat_name, 
-            login_session=login_session))
+        return redirect(url_for('categoryMenu',
+                                cat_name=cat_name,
+                                login_session=login_session))
     else:
-        return render_template('deletecatalogitem.html', 
-            cat_name=cat_name, catalogItem=catalogItem, 
-            item=item, login_session=login_session)
+        return render_template('deletecatalogitem.html',
+                               cat_name=cat_name, catalogItem=catalogItem,
+                               item=item, login_session=login_session)
 
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
-    app.debug = True
+    # app.debug = True
     app.run(host='0.0.0.0', port=8000)
